@@ -8,12 +8,11 @@ from customer import Customer
 CLOCK_STEP = 0.01
 
 
-def run_simulation(server_count: int, customer_count: int, priority_chance=0.1):
+def run_simulation(server_count: int, customer_count: int, priority_chance=0.1, logging = True):
     system = System(server_count)
     queue = MQueue()
     
     customer_arrival_times = customer_entry(customer_count)
-    print(customer_arrival_times)
 
     queued_customers = 0
 
@@ -24,8 +23,13 @@ def run_simulation(server_count: int, customer_count: int, priority_chance=0.1):
 
     finished_customers = []
     
-    customers_data = {}
+    waiting_count = {}
+    busy_servers_count = {}
+
     customer_id = 0
+
+    log_text = []
+
     while not queue.is_empty() or len(finish_events) > 0 or queued_customers != customer_count:
         if queued_customers < customer_count and customer_arrival_times[0] == clock:
             customer_id += 1
@@ -41,7 +45,8 @@ def run_simulation(server_count: int, customer_count: int, priority_chance=0.1):
             else:
                 queue.enqueue(customer)
             
-            print(f"{clock} \t # \t New customer arrived and queued.")
+            log = f"{clock} \t # \t New customer arrived and queued.\n"
+            log_text.append(log)
 
         elif not queue.is_empty() and system.can_serve():
             # Job assignment
@@ -53,7 +58,9 @@ def run_simulation(server_count: int, customer_count: int, priority_chance=0.1):
 
             finish_events = sorted(finish_events, key=lambda e: e['time'])
 
-            print(f"{clock} \t @ \t Customer assigned to server {server+1} and is set to finish in {round(clock+service_time, 2)}")
+            log = f"{clock} \t @ \t Customer assigned to server {server+1} and is set to finish in {round(clock+service_time, 2)}\n"
+            log_text.append(log)
+
 
         elif len(finish_events) > 0 and clock == finish_events[0]['time']:
             # Customer served
@@ -63,10 +70,19 @@ def run_simulation(server_count: int, customer_count: int, priority_chance=0.1):
 
             finished_customers.append(event['customer'])
 
-            print(f"{clock} \t * \t Server {event['server']+1} finished proccessing and is free.")
+            log = f"{clock} \t * \t Server {event['server']+1} finished proccessing and is free.\n"
+            log_text.extend(log)
+                
         else:
+            waiting_count[clock] = len(queue)
+            busy_servers_count[clock] = system.busy_servers()
+
             clock = round(clock + CLOCK_STEP, 2)
     
-    return finished_customers, system.server_stats, clock
+    if logging:
+        with open('out.txt', 'w') as wf:
+            wf.writelines(log_text)
+
+    return finished_customers, system.server_stats, clock, waiting_count, busy_servers_count
 
 

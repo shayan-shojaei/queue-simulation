@@ -1,9 +1,10 @@
-import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
+import pandas as pd
 
 
-def display_stats(customers_data, server_stats, total_time, waiting_count, busy_servers_count):
+def display_stats(
+    customers_data, server_stats, total_time, waiting_count, busy_servers_count
+):
     # customer stats
     customers_data = sorted(customers_data, key=lambda q: q.start_time)
     customer_arrival = []
@@ -57,11 +58,14 @@ def display_stats(customers_data, server_stats, total_time, waiting_count, busy_
     for server_number in server_stats:
         stats = server_stats[server_number]
 
-        server_customers.append(stats['customers'])
-        server_service_time.append(stats['service_time'])
-        server_idle_time.append(total_time - stats['service_time'])
-    
-    servers_df = pd.DataFrame(data=zip(server_customers, server_service_time, server_idle_time), columns=('Customers Count', 'Service Time', 'Idle Time'))
+        server_customers.append(stats["customers"])
+        server_service_time.append(stats["service_time"])
+        server_idle_time.append(total_time - stats["service_time"])
+
+    servers_df = pd.DataFrame(
+        data=zip(server_customers, server_service_time, server_idle_time),
+        columns=("Customers Count", "Service Time", "Idle Time"),
+    )
 
     print("Servers:")
     print(servers_df)
@@ -70,11 +74,11 @@ def display_stats(customers_data, server_stats, total_time, waiting_count, busy_
 
     # Plots
     plt.plot(waiting_count.keys(), waiting_count.values())
-    plt.title('Number of waiting customers at a time (NC):')
-    plt.savefig('nc.png')
+    plt.title("Number of waiting customers at a time (NC):")
+    plt.savefig("nc.png")
     plt.show()
 
     plt.plot(busy_servers_count.keys(), busy_servers_count.values())
-    plt.title('Number of busy servers at a time (NE):')
-    plt.savefig('ne.png')
+    plt.title("Number of busy servers at a time (NE):")
+    plt.savefig("ne.png")
     plt.show()

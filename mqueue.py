@@ -1,5 +1,6 @@
 from customer import Customer
 
+
 class MQueue:
     def __init__(self):
         self._queue = []
